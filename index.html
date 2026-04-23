@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Калькулятор по дискретной математике</title>
+<link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">Σ</span>
+    <div>
+      <div class="brand-title">Дискретная математика</div>
+      <div class="brand-sub">пошаговые решения для тетради</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <button class="nav-btn active" data-view="tsp-nn">
+      <span class="nav-num">1</span>
+      <span>TSP — ближайший сосед + 2-opt</span>
+    </button>
+    <button class="nav-btn" data-view="tsp-bnb">
+      <span class="nav-num">2</span>
+      <span>TSP — ветви и границы</span>
+    </button>
+    <button class="nav-btn" data-view="dijkstra">
+      <span class="nav-num">3</span>
+      <span>Алгоритм Дейкстры</span>
+    </button>
+    <button class="nav-btn" data-view="prim">
+      <span class="nav-num">4</span>
+      <span>Алгоритм Прима (MST)</span>
+    </button>
+    <button class="nav-btn" data-view="ford-fulkerson">
+      <span class="nav-num">5</span>
+      <span>Форд — Фалкерсон (max flow)</span>
+    </button>
+    <button class="nav-btn" data-view="hamming">
+      <span class="nav-num">6</span>
+      <span>Коды Хемминга</span>
+    </button>
+  </nav>
+
+  <main class="main" id="view-root">
+    <!-- view contents mounted here -->
+  </main>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
