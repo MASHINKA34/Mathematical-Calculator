@@ -21,7 +21,6 @@ export function renderTspBnbView(root) {
   });
 
   const btnSolve = h("button", { class: "btn primary" }, "Решить");
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnSolve.addEventListener("click", () => {
@@ -32,19 +31,6 @@ export function renderTspBnbView(root) {
     } catch (e) {
       sol.renderError(e.message);
     }
-  });
-
-  btnExample.addEventListener("click", () => {
-    const ex = [
-      [Infinity, 5, 2, 9, 3, 3],
-      [6, Infinity, 3, 9, 3, 12],
-      [2, 13, Infinity, 2, 3, 3],
-      [6, 2, 4, Infinity, 12, 6],
-      [3, 17, 6, 5, Infinity, 3],
-      [5, 8, 15, 5, 3, Infinity],
-    ];
-    sizeInput.value = 6;
-    matrix.setMatrix(ex);
   });
 
   btnReset.addEventListener("click", () => {
@@ -66,6 +52,6 @@ export function renderTspBnbView(root) {
   root.appendChild(panel("Матрица расстояний", matrix.element,
     h("div", { class: "hint" }, "Для несимметричных задач: M[i][j] ≠ M[j][i]. Размер ограничен 7 для плавной работы и избежания зависаний.")
   ));
-  root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnSolve, btnReset]));
   root.appendChild(sol.element);
 }

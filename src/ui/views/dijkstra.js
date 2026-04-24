@@ -1,4 +1,4 @@
-import { h, symMatrix, INF } from "../../utils.js";
+import { h, INF } from "../../utils.js";
 import { createMatrixInput } from "../matrix-input.js";
 import { createSolutionPanel } from "../step-renderer.js";
 import { solveDijkstra } from "../../algorithms/dijkstra.js";
@@ -23,7 +23,6 @@ export function renderDijkstraView(root) {
   const dstField = numberField({ label: "Сток (0 = ко всем)", value: 6, min: 0, max: 6, onChange: () => {} });
 
   const btnSolve = h("button", { class: "btn primary" }, "Решить");
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnSolve.addEventListener("click", () => {
@@ -37,28 +36,6 @@ export function renderDijkstraView(root) {
     } catch (e) {
       sol.renderError(e.message);
     }
-  });
-
-  btnExample.addEventListener("click", () => {
-    // 10-vertex example inspired by textbooks
-    const edges = [
-      [0, 1, 4], [0, 4, 15], [0, 5, 22],
-      [1, 2, 11], [1, 6, 5], [1, 7, 7], [1, 8, 12],
-      [2, 3, 6], [2, 6, 16], [2, 8, 2], [2, 9, 9],
-      [3, 4, 10], [3, 9, 13],
-      [4, 5, 8], [4, 9, 18],
-      [5, 6, 7],
-      [6, 7, 6], [6, 9, 14],
-      [7, 8, 4], [7, 9, 11],
-      [8, 9, 5],
-    ];
-    const M = symMatrix(10, edges);
-    sizeInput.value = 10;
-    matrix.setMatrix(M);
-    srcField.input.max = 10;
-    dstField.input.max = 10;
-    srcField.input.value = 1;
-    dstField.input.value = 10;
   });
 
   btnReset.addEventListener("click", () => {
@@ -82,6 +59,6 @@ export function renderDijkstraView(root) {
   root.appendChild(panel("Матрица весов рёбер", matrix.element,
     h("div", { class: "hint" }, "Граф неориентированный — при редактировании M[i][j] автоматически меняется M[j][i].")
   ));
-  root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnSolve, btnReset]));
   root.appendChild(sol.element);
 }

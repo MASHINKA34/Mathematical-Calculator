@@ -44,13 +44,9 @@ export function solveTSPBranchAndBound(dist0) {
   if (!addStep({
     title: "Шаг 1: Редукция матрицы",
     text:
-      `Вычисляем минимум по каждой строке и вычитаем его:\n` +
-      hRows.map((h, i) => `  строка ${i + 1}: min = ${fmt(h)}`).join("\n") +
-      `\nСумма констант редукции строк: h_строк = ${fmt(sum(hRows))}\n\n` +
-      `Затем вычисляем минимум по столбцам приведённой матрицы:\n` +
-      hCols.map((h, j) => `  столбец ${j + 1}: min = ${fmt(h)}`).join("\n") +
-      `\nСумма констант редукции столбцов: h_столбцов = ${fmt(sum(hCols))}\n\n` +
-      `Нижняя граница: H(B₀) = h_строк + h_столбцов = <span class="hi">${fmt(H0)}</span>`,
+      `Строки: [${hRows.map(fmt).join(", ")}], Σ = ${fmt(sum(hRows))}\n` +
+      `Столбцы: [${hCols.map(fmt).join(", ")}], Σ = ${fmt(sum(hCols))}\n` +
+      `H(B₀) = ${fmt(sum(hRows))} + ${fmt(sum(hCols))} = <span class="hi">${fmt(H0)}</span>`,
     matrix: { data: M, rowLabels: labels(n), colLabels: labels(n), emphasizeZeros: true },
   })) {
     return { steps, route: null };
@@ -127,32 +123,14 @@ export function solveTSPBranchAndBound(dist0) {
 
     const origI = rows[bestEdge.ii], origJ = cols[bestEdge.jj];
 
+    // Компактная строка θ-оценок
     const zTxt = zeros
       .map((z) => {
         const i0 = rows[z.ii] + 1, j0 = cols[z.jj] + 1;
-        const mk = z === bestEdge ? `  ← <span class="hi">max</span>` : ``;
-        return `  θ(${i0}, ${j0}) = ${fmt(z.rm)} + ${fmt(z.cm)} = ${fmt(z.theta)}${mk}`;
+        const mk = z === bestEdge ? ` <span class="hi">★</span>` : ``;
+        return `θ(${i0},${j0})=${fmt(z.theta)}${mk}`;
       })
-      .join("\n");
-
-    if (!addStep({
-      title: `Узел ${treeNode.label[0]}: ветвление`,
-      text:
-        `Текущая нижняя граница: H = ${fmt(H)}\n` +
-        `Зафиксированные рёбра: ${edgesFixed.length ? edgesFixed.map(([i, j]) => `(${i + 1}→${j + 1})`).join(", ") : "—"}\n\n` +
-        `Оценки θ для нулевых элементов (θ = min строки без j + min столбца без i):\n` +
-        zTxt +
-        `\n\nВетвимся по ребру с максимальной θ: <span class="hi">(${origI + 1} → ${origJ + 1})</span>, θ = ${fmt(bestEdge.theta)}`,
-      matrix: {
-        data: M,
-        rowLabels: rows.map((r) => String(r + 1)),
-        colLabels: cols.map((c) => String(c + 1)),
-        emphasizeZeros: true,
-        highlight: { cells: [[bestEdge.ii, bestEdge.jj]] },
-      },
-    })) {
-      return;
-    }
+      .join("  ");
 
     // ---- branch INCLUDE (origI -> origJ) ----
     const incNode = { id: nextId++, label: [`B${nextId - 1}`, `вкл. (${origI + 1},${origJ + 1})`], children: [], status: "normal" };
@@ -160,10 +138,8 @@ export function solveTSPBranchAndBound(dist0) {
 
     const newEdges = [...edgesFixed, [origI, origJ]];
     const newForbidden = new Set(forbidden);
-    // also forbid edges that would close a premature cycle
     forbidCycleEdges(newEdges, newForbidden, n);
 
-    // build new matrix without row origI, col origJ
     const newRows = rows.filter((_, k) => k !== bestEdge.ii);
     const newCols = cols.filter((_, k) => k !== bestEdge.jj);
     const subM = Array.from({ length: newRows.length }, () => Array(newCols.length).fill(0));
@@ -176,7 +152,6 @@ export function solveTSPBranchAndBound(dist0) {
       }
       iiS++;
     }
-    // apply forbidden
     for (let ii = 0; ii < newRows.length; ii++)
       for (let jj = 0; jj < newCols.length; jj++)
         if (newForbidden.has(`${newRows[ii]}-${newCols[jj]}`)) subM[ii][jj] = INF;
@@ -185,32 +160,6 @@ export function solveTSPBranchAndBound(dist0) {
     const redCost = sum(hR) + sum(hC);
     const Hinc = H + redCost;
     incNode.label = [...incNode.label, `H = ${fmt(Hinc)}`];
-
-    if (!addStep({
-      title: `Ветвь «включить (${origI + 1}, ${origJ + 1})»`,
-      text:
-        `Зачёркиваем строку ${origI + 1} и столбец ${origJ + 1}.
-` +
-        `Запрещаем обратные рёбра, ведущие к преждевременному замыканию цикла.
-` +
-        `Редукция подматрицы: Δ = ${fmt(redCost)}
-` +
-        `H(${incNode.label[0]}) = ${fmt(H)} + ${fmt(redCost)} = <span class="hi">${fmt(Hinc)}</span>`,
-      matrix: {
-        data: redM,
-        rowLabels: newRows.map((r) => String(r + 1)),
-        colLabels: newCols.map((c) => String(c + 1)),
-        emphasizeZeros: true,
-      },
-    })) {
-      return;
-    }
-if (Hinc < best.length) {
-      branch(redM, newRows, newCols, Hinc, newEdges, newForbidden, incNode, depth + 1);
-    } else {
-      incNode.status = "pruned";
-      incNode.label = [...incNode.label, "отсечена"];
-    }
 
     // ---- branch EXCLUDE (origI -> origJ) ----
     const excNode = { id: nextId++, label: [`B${nextId - 1}`, `искл. (${origI + 1},${origJ + 1})`], children: [], status: "normal" };
@@ -223,24 +172,33 @@ if (Hinc < best.length) {
     const Hexc = H + redCost2;
     excNode.label = [...excNode.label, `H = ${fmt(Hexc)}`];
 
+    // Один компактный шаг на узел
     if (!addStep({
-      title: `Ветвь «исключить (${origI + 1}, ${origJ + 1})»`,
+      title: `${treeNode.label[0]}: ветвление по (${origI + 1}→${origJ + 1})`,
       text:
-        `Ставим элемент (${origI + 1}, ${origJ + 1}) = ∞.
-` +
-        `Редукция: Δ = ${fmt(redCost2)}
-` +
-        `H(${excNode.label[0]}) = ${fmt(H)} + ${fmt(redCost2)} = <span class="hi">${fmt(Hexc)}</span>`,
+        `H = ${fmt(H)}  |  рёбра: ${edgesFixed.length ? edgesFixed.map(([i, j]) => `(${i + 1}→${j + 1})`).join(" ") : "—"}\n` +
+        `${zTxt}\n\n` +
+        `Вкл. (${origI + 1}→${origJ + 1}): Δ = ${fmt(redCost)}, H(${incNode.label[0]}) = <span class="hi">${fmt(Hinc)}</span>\n` +
+        `Искл. (${origI + 1}→${origJ + 1}): Δ = ${fmt(redCost2)}, H(${excNode.label[0]}) = <span class="hi">${fmt(Hexc)}</span>`,
       matrix: {
-        data: redM2,
+        data: M,
         rowLabels: rows.map((r) => String(r + 1)),
         colLabels: cols.map((c) => String(c + 1)),
         emphasizeZeros: true,
+        highlight: { cells: [[bestEdge.ii, bestEdge.jj]] },
       },
     })) {
       return;
     }
-if (Hexc < best.length) {
+
+    if (Hinc < best.length) {
+      branch(redM, newRows, newCols, Hinc, newEdges, newForbidden, incNode, depth + 1);
+    } else {
+      incNode.status = "pruned";
+      incNode.label = [...incNode.label, "отсечена"];
+    }
+
+    if (Hexc < best.length) {
       branch(redM2, rows, cols, Hexc, edgesFixed, forbidden, excNode, depth + 1);
     } else {
       excNode.status = "pruned";

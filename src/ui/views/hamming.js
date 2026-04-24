@@ -12,7 +12,6 @@ export function renderHammingView(root) {
   const betaField = textField({ label: "β' (полученный код)", value: "", placeholder: "например 1010011010111" });
   const btnDecode = h("button", { class: "btn primary" }, "Декодировать");
 
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnEncode.addEventListener("click", () => {
@@ -36,12 +35,6 @@ export function renderHammingView(root) {
     }
   });
 
-  btnExample.addEventListener("click", () => {
-    alphaField.input.value = "101110111";
-    betaField.input.value = "1010011010111";
-    sol.clear();
-  });
-
   btnReset.addEventListener("click", () => {
     alphaField.input.value = "";
     betaField.input.value = "";
@@ -62,6 +55,6 @@ export function renderHammingView(root) {
     h("div", { class: "hint" }, "Чтобы проверить исправление — закодируйте, поменяйте один бит в β и нажмите «Декодировать».")
   ));
 
-  root.appendChild(h("div", { class: "row" }, [btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnReset]));
   root.appendChild(sol.element);
 }

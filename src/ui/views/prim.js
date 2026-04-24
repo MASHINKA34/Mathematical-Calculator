@@ -1,4 +1,4 @@
-import { h, symMatrix } from "../../utils.js";
+import { h } from "../../utils.js";
 import { createMatrixInput } from "../matrix-input.js";
 import { createSolutionPanel } from "../step-renderer.js";
 import { solvePrim } from "../../algorithms/prim.js";
@@ -21,7 +21,6 @@ export function renderPrimView(root) {
   const startField = numberField({ label: "Старт", value: 1, min: 1, max: 6, onChange: () => {} });
 
   const btnSolve = h("button", { class: "btn primary" }, "Решить");
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnSolve.addEventListener("click", () => {
@@ -33,23 +32,6 @@ export function renderPrimView(root) {
     } catch (e) {
       sol.renderError(e.message);
     }
-  });
-
-  btnExample.addEventListener("click", () => {
-    const edges = [
-      [0, 1, 4], [0, 2, 12], [0, 4, 15],
-      [1, 2, 6], [1, 3, 8], [1, 5, 11],
-      [2, 3, 7], [2, 4, 14], [2, 5, 10],
-      [3, 5, 5], [3, 6, 9],
-      [4, 5, 13], [4, 7, 16],
-      [5, 6, 3], [5, 7, 12],
-      [6, 7, 8],
-    ];
-    const M = symMatrix(8, edges);
-    sizeInput.value = 8;
-    matrix.setMatrix(M);
-    startField.input.max = 8;
-    startField.input.value = 1;
   });
 
   btnReset.addEventListener("click", () => {
@@ -70,6 +52,6 @@ export function renderPrimView(root) {
     ])
   ));
   root.appendChild(panel("Матрица весов рёбер", matrix.element));
-  root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnSolve, btnReset]));
   root.appendChild(sol.element);
 }

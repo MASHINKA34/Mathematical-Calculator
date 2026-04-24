@@ -1,4 +1,4 @@
-import { h, INF } from "../../utils.js";
+import { h } from "../../utils.js";
 import { createMatrixInput } from "../matrix-input.js";
 import { createSolutionPanel } from "../step-renderer.js";
 import { solveMaxFlow } from "../../algorithms/ford-fulkerson.js";
@@ -22,7 +22,6 @@ export function renderFordFulkersonView(root) {
   const dstField = numberField({ label: "Сток", value: 7, min: 1, max: 7, onChange: () => {} });
 
   const btnSolve = h("button", { class: "btn primary" }, "Решить");
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnSolve.addEventListener("click", () => {
@@ -35,27 +34,6 @@ export function renderFordFulkersonView(root) {
     } catch (e) {
       sol.renderError(e.message);
     }
-  });
-
-  btnExample.addEventListener("click", () => {
-    // 7-vertex flow network
-    // directed capacities
-    const n = 7;
-    const M = Array.from({ length: n }, () => Array(n).fill(0));
-    const caps = [
-      [0, 1, 12], [0, 3, 4],
-      [1, 2, 8], [1, 4, 5],
-      [2, 5, 10],
-      [3, 1, 3], [3, 4, 7],
-      [4, 5, 4], [4, 6, 9],
-      [5, 6, 12],
-    ];
-    for (const [a, b, c] of caps) M[a][b] = c;
-    sizeInput.value = 7;
-    matrix.setMatrix(M);
-    srcField.input.max = 7; dstField.input.max = 7;
-    srcField.input.value = 1;
-    dstField.input.value = 7;
   });
 
   btnReset.addEventListener("click", () => {
@@ -80,6 +58,6 @@ export function renderFordFulkersonView(root) {
     matrix.element,
     h("div", { class: "hint" }, "Ориентированный граф: c[i][j] ≠ c[j][i]. 0 или пусто — ребра нет.")
   ));
-  root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnSolve, btnReset]));
   root.appendChild(sol.element);
 }
