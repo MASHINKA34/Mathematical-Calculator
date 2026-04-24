@@ -127,8 +127,9 @@ export function solveTSPNearestNeighbor(dist, start = 0) {
 
   let improved = true;
   let pass = 0;
+  const MAX_PASSES = 200;
   let cur = closedRoute.slice();
-  while (improved) {
+  while (improved && pass < MAX_PASSES) {
     improved = false;
     pass++;
     const improvementLines = [];
@@ -141,9 +142,12 @@ export function solveTSPNearestNeighbor(dist, start = 0) {
         const newE = dist[a][c] + dist[b][d];
         if (newE === INF) continue;
         if (newE + 1e-9 < oldE) {
-          const delta = oldE - newE;
           const newRoute = cur.slice(0, i).concat(cur.slice(i, j + 1).reverse(), cur.slice(j + 1));
           const newL = pathLength(newRoute, dist);
+          // Для несимметричной матрицы разворот меняет внутренние рёбра —
+          // принимаем улучшение только если полная длина реально уменьшилась.
+          if (newL >= length - 1e-9) continue;
+          const delta = length - newL;
           improvementLines.push(
             `Разворот отрезка [${cur.slice(i, j + 1).map((x) => x + 1).join(", ")}] → ` +
             `(${a + 1},${c + 1}) + (${b + 1},${d + 1}) = ${fmt(dist[a][c])} + ${fmt(dist[b][d])} = ${fmt(newE)} ` +

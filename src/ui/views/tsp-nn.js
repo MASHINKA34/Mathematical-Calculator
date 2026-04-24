@@ -1,4 +1,4 @@
-import { h, symMatrix } from "../../utils.js";
+import { h } from "../../utils.js";
 import { createMatrixInput } from "../matrix-input.js";
 import { createSolutionPanel } from "../step-renderer.js";
 import { solveTSPNearestNeighbor } from "../../algorithms/tsp-nn.js";
@@ -11,6 +11,7 @@ export function renderTspNnView(root) {
     maxSize: 10,
     symmetric: false,
     diagonal: "inf",
+    emptyValue: 0,
   });
 
   const sol = createSolutionPanel();
@@ -28,7 +29,6 @@ export function renderTspNnView(root) {
   });
 
   const btnSolve = h("button", { class: "btn primary" }, "Решить");
-  const btnExample = h("button", { class: "btn" }, "Загрузить пример");
   const btnReset = h("button", { class: "btn ghost" }, "Сбросить");
 
   btnSolve.addEventListener("click", () => {
@@ -40,22 +40,6 @@ export function renderTspNnView(root) {
     } catch (e) {
       sol.renderError(e.message);
     }
-  });
-
-  btnExample.addEventListener("click", () => {
-    // example from the prompt
-    const ex = [
-      [Infinity, 5, 2, 9, 3, 3],
-      [6, Infinity, 3, 9, 3, 12],
-      [2, 13, Infinity, 2, 3, 3],
-      [6, 2, 4, Infinity, 12, 6],
-      [3, 17, 6, 5, Infinity, 3],
-      [5, 8, 15, 5, 3, Infinity],
-    ];
-    matrix.setMatrix(ex);
-    sizeInput.value = 6;
-    startField.input.value = 1;
-    startField.input.max = 6;
   });
 
   btnReset.addEventListener("click", () => {
@@ -78,8 +62,8 @@ export function renderTspNnView(root) {
   ));
   root.appendChild(panel("Матрица расстояний (строка = откуда, столбец = куда)",
     matrix.element,
-    h("div", { class: "hint" }, "Пустая ячейка = ∞ (ребро отсутствует). Диагональ = ∞ всегда.")
+    h("div", { class: "hint" }, "Пустая ячейка = 0. Диагональ = ∞ всегда.")
   ));
-  root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
+  root.appendChild(h("div", { class: "row" }, [btnSolve, btnReset]));
   root.appendChild(sol.element);
 }

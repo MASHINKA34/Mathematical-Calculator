@@ -21,6 +21,7 @@ export function createMatrixInput(opts = {}) {
     symmetric: opts.symmetric ?? false,
     diagonal: opts.diagonal ?? "inf",
     labels: opts.labels ?? null,
+    emptyValue: opts.emptyValue ?? INF,
     M: null,
   };
 
@@ -61,10 +62,14 @@ export function createMatrixInput(opts = {}) {
           value: v === INF ? (isDiag && state.diagonal === "inf" ? INF_SYMBOL : "") : fmt(v),
           readonly: diagReadonly ? true : null,
           tabindex: diagReadonly ? -1 : 0,
+          inputmode: diagReadonly ? null : "numeric",
+          enterkeyhint: diagReadonly ? null : "next",
           dataset: { i, j },
         });
         input.addEventListener("change", (e) => {
-          const vv = parseCell(e.target.value);
+          const raw = e.target.value.trim();
+          let vv = parseCell(raw);
+          if (vv === INF && raw === "" && !isDiag) vv = state.emptyValue;
           state.M[i][j] = vv;
           if (state.symmetric && i !== j) state.M[j][i] = vv;
           render();
@@ -77,8 +82,20 @@ export function createMatrixInput(opts = {}) {
           if (e.key === "Tab") return;
           if (e.key === "ArrowRight") nj = Math.min(state.n - 1, J + 1);
           else if (e.key === "ArrowLeft") nj = Math.max(0, J - 1);
-          else if (e.key === "ArrowDown" || e.key === "Enter") ni = Math.min(state.n - 1, I + 1);
+          else if (e.key === "ArrowDown") ni = Math.min(state.n - 1, I + 1);
           else if (e.key === "ArrowUp") ni = Math.max(0, I - 1);
+          else if (e.key === "Enter") {
+            // Следующая ячейка вправо, затем перенос строки; пропускаем диагональ
+            let nextI = I, nextJ = J + 1;
+            if (nextJ >= state.n) { nextI = I + 1; nextJ = 0; }
+            if (nextI >= state.n) { nextI = 0; nextJ = 0; }
+            if (nextI === nextJ && state.diagonal !== "free") {
+              nextJ++;
+              if (nextJ >= state.n) { nextI++; nextJ = 0; }
+              if (nextI >= state.n) { nextI = 0; nextJ = 0; }
+            }
+            ni = nextI; nj = nextJ;
+          }
           else return;
           e.preventDefault();
           const next = table.querySelector(`input[data-i="${ni}"][data-j="${nj}"]`);
