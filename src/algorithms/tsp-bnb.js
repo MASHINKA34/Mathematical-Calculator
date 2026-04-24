@@ -138,9 +138,6 @@ export function solveTSPBranchAndBound(dist0) {
     if (!addStep({
       title: `Узел ${treeNode.label[0]}: ветвление`,
       text:
-    })) {
-      return;
-    }
         `Текущая нижняя граница: H = ${fmt(H)}\n` +
         `Зафиксированные рёбра: ${edgesFixed.length ? edgesFixed.map(([i, j]) => `(${i + 1}→${j + 1})`).join(", ") : "—"}\n\n` +
         `Оценки θ для нулевых элементов (θ = min строки без j + min столбца без i):\n` +
@@ -153,7 +150,9 @@ export function solveTSPBranchAndBound(dist0) {
         emphasizeZeros: true,
         highlight: { cells: [[bestEdge.ii, bestEdge.jj]] },
       },
-    });
+    })) {
+      return;
+    }
 
     // ---- branch INCLUDE (origI -> origJ) ----
     const incNode = { id: nextId++, label: [`B${nextId - 1}`, `вкл. (${origI + 1},${origJ + 1})`], children: [], status: "normal" };
@@ -190,12 +189,12 @@ export function solveTSPBranchAndBound(dist0) {
     if (!addStep({
       title: `Ветвь «включить (${origI + 1}, ${origJ + 1})»`,
       text:
-    })) {
-      return;
-    }
-        `Зачёркиваем строку ${origI + 1} и столбец ${origJ + 1}.\n` +
-        `Запрещаем обратные рёбра, ведущие к преждевременному замыканию цикла.\n` +
-        `Редукция подматрицы: Δ = ${fmt(redCost)}\n` +
+        `Зачёркиваем строку ${origI + 1} и столбец ${origJ + 1}.
+` +
+        `Запрещаем обратные рёбра, ведущие к преждевременному замыканию цикла.
+` +
+        `Редукция подматрицы: Δ = ${fmt(redCost)}
+` +
         `H(${incNode.label[0]}) = ${fmt(H)} + ${fmt(redCost)} = <span class="hi">${fmt(Hinc)}</span>`,
       matrix: {
         data: redM,
@@ -203,9 +202,10 @@ export function solveTSPBranchAndBound(dist0) {
         colLabels: newCols.map((c) => String(c + 1)),
         emphasizeZeros: true,
       },
-    });
-
-    if (Hinc < best.length) {
+    })) {
+      return;
+    }
+if (Hinc < best.length) {
       branch(redM, newRows, newCols, Hinc, newEdges, newForbidden, incNode, depth + 1);
     } else {
       incNode.status = "pruned";
@@ -226,11 +226,10 @@ export function solveTSPBranchAndBound(dist0) {
     if (!addStep({
       title: `Ветвь «исключить (${origI + 1}, ${origJ + 1})»`,
       text:
-    })) {
-      return;
-    }
-        `Ставим элемент (${origI + 1}, ${origJ + 1}) = ∞.\n` +
-        `Редукция: Δ = ${fmt(redCost2)}\n` +
+        `Ставим элемент (${origI + 1}, ${origJ + 1}) = ∞.
+` +
+        `Редукция: Δ = ${fmt(redCost2)}
+` +
         `H(${excNode.label[0]}) = ${fmt(H)} + ${fmt(redCost2)} = <span class="hi">${fmt(Hexc)}</span>`,
       matrix: {
         data: redM2,
@@ -238,9 +237,10 @@ export function solveTSPBranchAndBound(dist0) {
         colLabels: cols.map((c) => String(c + 1)),
         emphasizeZeros: true,
       },
-    });
-
-    if (Hexc < best.length) {
+    })) {
+      return;
+    }
+if (Hexc < best.length) {
       branch(redM2, rows, cols, Hexc, edgesFixed, forbidden, excNode, depth + 1);
     } else {
       excNode.status = "pruned";
