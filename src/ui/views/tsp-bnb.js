@@ -8,15 +8,15 @@ export function renderTspBnbView(root) {
   const matrix = createMatrixInput({
     size: 5,
     minSize: 3,
-    maxSize: 9,
+    maxSize: 7,
     symmetric: false,
     diagonal: "inf",
   });
   const sol = createSolutionPanel();
 
-  const sizeInput = h("input", { type: "number", value: 5, min: 3, max: 9 });
+  const sizeInput = h("input", { type: "number", value: 5, min: 3, max: 7 });
   sizeInput.addEventListener("input", () => {
-    const n = Math.max(3, Math.min(9, +sizeInput.value || 3));
+    const n = Math.max(3, Math.min(7, +sizeInput.value || 3));
     matrix.setSize(n);
   });
 
@@ -64,7 +64,7 @@ export function renderTspBnbView(root) {
     ])
   ));
   root.appendChild(panel("Матрица расстояний", matrix.element,
-    h("div", { class: "hint" }, "Для несимметричных задач: M[i][j] ≠ M[j][i]. Размер ограничен 9 для разумного времени работы.")
+    h("div", { class: "hint" }, "Для несимметричных задач: M[i][j] ≠ M[j][i]. Размер ограничен 7 для плавной работы и избежания зависаний.")
   ));
   root.appendChild(h("div", { class: "row" }, [btnSolve, btnExample, btnReset]));
   root.appendChild(sol.element);

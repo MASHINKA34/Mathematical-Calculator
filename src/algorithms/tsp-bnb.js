@@ -8,16 +8,29 @@ import { INF, fmt, cloneMatrix } from "../utils.js";
 export function solveTSPBranchAndBound(dist0) {
   const n = dist0.length;
   const steps = [];
+  const MAX_STEPS = 300;
 
   if (n > 9) throw new Error("Для метода ветвей и границ ограничим n ≤ 9 (иначе слишком долго).");
 
-  steps.push({
+  function tooManySteps() {
+    return steps.length >= MAX_STEPS;
+  }
+
+  function addStep(step) {
+    if (tooManySteps()) return false;
+    steps.push(step);
+    return true;
+  }
+
+  if (!addStep({
     title: "Постановка",
     text:
       `Задача коммивояжёра, решение методом ветвей и границ (алгоритм Литтла).\n` +
       `Строки матрицы — откуда, столбцы — куда.`,
     matrix: { data: dist0, rowLabels: labels(n), colLabels: labels(n) },
-  });
+  })) {
+    return { steps, route: null };
+  }
 
   let best = { length: INF, route: null };
 
@@ -28,7 +41,7 @@ export function solveTSPBranchAndBound(dist0) {
   const { M, hRows, hCols, rows0, cols0 } = reduce(dist0);
   const H0 = sum(hRows) + sum(hCols);
 
-  steps.push({
+  if (!addStep({
     title: "Шаг 1: Редукция матрицы",
     text:
       `Вычисляем минимум по каждой строке и вычитаем его:\n` +
@@ -39,7 +52,9 @@ export function solveTSPBranchAndBound(dist0) {
       `\nСумма констант редукции столбцов: h_столбцов = ${fmt(sum(hCols))}\n\n` +
       `Нижняя граница: H(B₀) = h_строк + h_столбцов = <span class="hi">${fmt(H0)}</span>`,
     matrix: { data: M, rowLabels: labels(n), colLabels: labels(n), emphasizeZeros: true },
-  });
+  })) {
+    return { steps, route: null };
+  }
 
   treeRoot.label = [`B₀`, `H = ${fmt(H0)}`];
 
@@ -49,6 +64,11 @@ export function solveTSPBranchAndBound(dist0) {
   branch(M, rows0, cols0, H0, edgesFixed, forbidden, treeRoot, 0);
 
   function branch(M, rows, cols, H, edgesFixed, forbidden, treeNode, depth) {
+    if (tooManySteps()) {
+      treeNode.status = "pruned";
+      treeNode.label = [...treeNode.label, "ограничено по шагам"];
+      return;
+    }
     const size = rows.length;
     if (size === 0) {
       // tour complete
@@ -59,7 +79,7 @@ export function solveTSPBranchAndBound(dist0) {
       }
       treeNode.status = "optimal";
       treeNode.label = [...treeNode.label, `L = ${fmt(len)}`];
-      steps.push({
+      if (!addStep({
         title: `Маршрут собран: L = ${fmt(len)}`,
         text:
           `Добавленные рёбра образуют полный цикл:\n` +
@@ -67,7 +87,9 @@ export function solveTSPBranchAndBound(dist0) {
           `\nПолный маршрут: <span class="ok">${route.map((x) => x + 1).join(" → ")}</span>, ` +
           `L = <span class="ok">${fmt(len)}</span>` +
           (len < best.length ? `` : ``),
-      });
+      })) {
+        return;
+      }
       return;
     }
 
@@ -113,9 +135,12 @@ export function solveTSPBranchAndBound(dist0) {
       })
       .join("\n");
 
-    steps.push({
+    if (!addStep({
       title: `Узел ${treeNode.label[0]}: ветвление`,
       text:
+    })) {
+      return;
+    }
         `Текущая нижняя граница: H = ${fmt(H)}\n` +
         `Зафиксированные рёбра: ${edgesFixed.length ? edgesFixed.map(([i, j]) => `(${i + 1}→${j + 1})`).join(", ") : "—"}\n\n` +
         `Оценки θ для нулевых элементов (θ = min строки без j + min столбца без i):\n` +
@@ -162,9 +187,12 @@ export function solveTSPBranchAndBound(dist0) {
     const Hinc = H + redCost;
     incNode.label = [...incNode.label, `H = ${fmt(Hinc)}`];
 
-    steps.push({
+    if (!addStep({
       title: `Ветвь «включить (${origI + 1}, ${origJ + 1})»`,
       text:
+    })) {
+      return;
+    }
         `Зачёркиваем строку ${origI + 1} и столбец ${origJ + 1}.\n` +
         `Запрещаем обратные рёбра, ведущие к преждевременному замыканию цикла.\n` +
         `Редукция подматрицы: Δ = ${fmt(redCost)}\n` +
@@ -195,9 +223,12 @@ export function solveTSPBranchAndBound(dist0) {
     const Hexc = H + redCost2;
     excNode.label = [...excNode.label, `H = ${fmt(Hexc)}`];
 
-    steps.push({
+    if (!addStep({
       title: `Ветвь «исключить (${origI + 1}, ${origJ + 1})»`,
       text:
+    })) {
+      return;
+    }
         `Ставим элемент (${origI + 1}, ${origJ + 1}) = ∞.\n` +
         `Редукция: Δ = ${fmt(redCost2)}\n` +
         `H(${excNode.label[0]}) = ${fmt(H)} + ${fmt(redCost2)} = <span class="hi">${fmt(Hexc)}</span>`,
@@ -218,25 +249,27 @@ export function solveTSPBranchAndBound(dist0) {
   }
 
   if (!best.route) {
-    steps.push({
+    if (!addStep({
       title: "Результат",
       final: true,
       text: `<span class="err">Оптимальный маршрут не найден (возможно, матрица задана некорректно).</span>`,
       tree: treeRoot,
-    });
+    })) {
+      return { steps, route: null };
+    }
     return { steps, route: null };
   }
 
   // mark optimal path in tree
   markOptimalPath(treeRoot, best);
 
-  steps.push({
+  if (!addStep({
     title: "Дерево ветвлений",
     text: `Узлы показывают нижнюю границу H. Зелёным отмечен путь к оптимальному маршруту.`,
     tree: treeRoot,
-  });
+  })) return { steps, route: best.route, length: best.length };
 
-  steps.push({
+  if (!addStep({
     title: "Результат",
     final: true,
     text:
@@ -249,7 +282,9 @@ export function solveTSPBranchAndBound(dist0) {
       directed: true,
       doneNodes: Array.from({ length: n }, (_, i) => i),
     },
-  });
+  })) {
+    return { steps, route: best.route, length: best.length };
+  }
 
   return { steps, route: best.route, length: best.length };
 }

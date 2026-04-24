@@ -23,6 +23,7 @@
 
 * { box-sizing: border-box; }
 
+html { min-height: 100%; }
 html, body { height: 100%; margin: 0; padding: 0; }
 
 body {
@@ -31,7 +32,8 @@ body {
   font-family: var(--sans);
   font-size: 14px;
   line-height: 1.5;
-  overflow: hidden;
+  overflow: auto;
+  min-height: 100vh;
 }
 
 /* ---------- topbar ---------- */
@@ -59,7 +61,7 @@ body {
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr;
-  height: calc(100vh - 56px);
+  min-height: calc(100vh - 56px);
 }
 
 /* ---------- sidebar ---------- */
@@ -421,16 +423,41 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .main { padding: 16px; }
 }
 @media (max-width: 600px) {
-  .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+  .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; min-height: auto; }
   .sidebar {
     border-right: none;
     border-bottom: 1px solid var(--border);
     flex-direction: row;
+    flex-wrap: wrap;
     overflow-x: auto;
     padding: 8px;
   }
   .nav-btn { flex: 0 0 auto; }
   .nav-btn span:not(.nav-num) { display: inline; }
+  .main {
+    padding: 16px;
+  }
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .field input[type="number"],
+  .field input[type="text"],
+  .field select {
+    min-width: 100%;
+  }
+  .matrix-input td input {
+    min-width: 44px;
+    width: 100%;
+  }
+  button.btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .solution-wrap {
+    max-height: 55vh;
+    overflow: auto;
+  }
   body { overflow: auto; }
 }
 
